@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/andrethepartywhiz/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>http://localhost/andrethepartywhiz/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+<url><loc>http://localhost/andrethepartywhiz/andrethepartywhiz/about-us</loc><lastmod>2018-08-19T04:50Z</lastmod><changefreq>hourly</changefreq></url>
+<url><loc>http://localhost/andrethepartywhiz/andrethepartywhiz/contact-us</loc><lastmod>2018-08-18T19:30Z</lastmod><changefreq>daily</changefreq></url>
+<url><loc>http://localhost/andrethepartywhiz/andrethepartywhiz/home</loc><lastmod>2018-08-19T04:57Z</lastmod><changefreq>hourly</changefreq></url>
+<url><loc>http://localhost/andrethepartywhiz/andrethepartywhiz/inspirations</loc><lastmod>2018-08-19T04:00Z</lastmod><changefreq>hourly</changefreq></url>
+<url><loc>http://localhost/andrethepartywhiz/andrethepartywhiz/services</loc><lastmod>2018-08-19T04:36Z</lastmod><changefreq>hourly</changefreq></url>
+</urlset>

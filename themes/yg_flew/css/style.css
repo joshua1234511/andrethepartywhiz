@@ -1243,3 +1243,11 @@ ul.dropdown-menu{
 ul.dropdown-menu li a:hover{
   background-color: #fff !important;
 }
+
+#fh5co-services-section .item-block h3 {
+  min-height: 70px;
+}
+
+#fh5co-services-section .item-block {
+  min-height: 375px;
+}

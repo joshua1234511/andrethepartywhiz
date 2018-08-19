@@ -8,7 +8,7 @@
 		   			<div class="col-md-10 col-md-offset-1 text-center js-fullheight slider-text">
 		   				<div class="slider-text-inner">
 		   					<h2>{{ view.field.title.value(view.result[loop.index-1]) | striptags }}</h2>
-		   					{% if view.result[loop.index-1] %}
+		   					{% if view.field.field_button_text.value(view.result[loop.index-1]) %}
 		   					<p><a href="{{ view.field.field_button_link.value(view.result[loop.index-1]) | striptags }}" class="btn btn-primary btn-lg">{{ view.field.field_button_text.value(view.result[loop.index-1]) | striptags }}</a></p>
 		   					{% endif %}
 		   				</div>
