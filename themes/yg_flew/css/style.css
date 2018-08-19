@@ -1251,3 +1251,14 @@ ul.dropdown-menu li a:hover{
 #fh5co-services-section .item-block {
   min-height: 375px;
 }
+
+.captcha {
+  display: inline-block;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.form-actions {
+  padding-right: 15px;
+  padding-left: 15px;
+}
