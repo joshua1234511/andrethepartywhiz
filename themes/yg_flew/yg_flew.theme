@@ -1,0 +1,110 @@
+<?php
+/**
+ * @file
+ * Bootstrap sub-theme.
+ *
+ * Place your custom PHP code in this file.
+ */
+
+function yg_flew_preprocess_page(&$variables) {
+  $variables['logopath'] = '/' . drupal_get_path('theme','yg_flew') . '/images/flew_logo.png';
+  $variables['facebook'] = theme_get_setting('facebook');
+  $variables['twitter'] = theme_get_setting('twitter');
+  $variables['google_plus'] = theme_get_setting('google_plus');
+  $variables['linkedin'] = theme_get_setting('linkedin');
+  $variables['pinterest'] = theme_get_setting('pinterest');
+  $variables['instagram'] = theme_get_setting('instagram');
+  $variables['copyright'] = theme_get_setting('copyright');
+  $variables['company_name'] = theme_get_setting('company_name');
+  $variables['company_url'] = theme_get_setting('company_url');
+  
+}
+/**
+ * Implements hook_form_system_theme_settings_alter().
+ */
+function yg_flew_form_system_theme_settings_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+
+  $form['flew_settings']['footer'] = array(
+    '#type' => 'details',
+    '#title' => t('Theme Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['flew_settings']['footer']['pinterest'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Pinterest'),
+    '#default_value' => theme_get_setting('pinterest'),
+    );
+  $form['flew_settings']['footer']['instagram'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Instagram'),
+   '#default_value' => theme_get_setting('instagram'),
+);
+  
+  $form['flew_settings']['footer']['facebook'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook'),
+    '#default_value' => theme_get_setting('facebook'),
+    );
+  $form['flew_settings']['footer']['twitter'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Twitter'),
+   '#default_value' => theme_get_setting('twitter'),
+  );
+  
+ 
+  $form['flew_settings']['footer']['google_plus'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Google plus'),
+    '#default_value' => theme_get_setting('google_plus'),
+  );
+  $form['flew_settings']['footer']['linkedin'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Linkedin'),
+    '#default_value' => theme_get_setting('linkedin'),
+    );
+
+  $form['flew_settings']['footer']['copyright'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Copyright'),
+    '#default_value' => theme_get_setting('copyright'),
+  );
+
+  $form['flew_settings']['footer']['company_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company Name'),
+    '#default_value' => theme_get_setting('company_name'),
+  );
+
+  $form['flew_settings']['footer']['company_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company URL'),
+    '#description' => t('i.e : https://www.example.com'),
+    '#default_value' => theme_get_setting('company_url'),
+  );
+  
+  $form['#submit'][] ='yg_flew_settings_form_submit';
+}
+
+
+function yg_flew_settings_form_submit(&$form, &$form_state) {
+  
+  }
+
+/**
+ * Implements hook_preprocess_menu().
+ */
+function yg_flew_preprocess_menu(&$variables, $hook) {
+  if ($hook == 'menu__main') { // We're doing that for main menu.
+    // Get the current path.
+    $current_path = \Drupal::request()->getRequestUri();
+    $items = $variables['items'];
+    foreach ($items as $key => $item) {
+      // If path is current_path, set active to li.
+      if ($item['url']->toString() == $current_path) {
+        // Add active link.
+        $variables['items'][$key]['attributes']['class'] = 'active';
+      }
+    }
+  }
+}

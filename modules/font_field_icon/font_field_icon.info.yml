@@ -1,0 +1,13 @@
+name: Font field icon
+type: module
+description: Provides an ability to add social or other fontawesome icon to text field
+# core: 8.x
+package: Field types
+dependencies:
+  - drupal:field
+
+# Information added by Drupal.org packaging script on 2017-08-30
+version: '8.x-1.1'
+core: '8.x'
+project: 'font_field_icon'
+datestamp: 1504099747
