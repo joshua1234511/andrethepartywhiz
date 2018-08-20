@@ -7,7 +7,7 @@
 }
 /* =======================================================
 *
-* 	Template Style 
+* 	Template Style
 *	Edit this section
 *
 * ======================================================= */
@@ -1261,4 +1261,14 @@ ul.dropdown-menu li a:hover{
 .form-actions {
   padding-right: 15px;
   padding-left: 15px;
+}
+
+#fh5co-services-section, #fh5co-work-section, #fh5co-testimony-section, #fh5co-blog-section {
+  padding: 0;
+}
+
+@media screen and (max-width: 430px) {
+  #fh5co-header h1 a {
+      font-size: 65%;
+  }
 }
