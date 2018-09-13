@@ -169,6 +169,7 @@ class WebformHandlerEmailAdvancedTest extends WebformTestBase {
     $this->drupalPostForm("admin/structure/webform/manage/test_handler_email_advanced/submission/$sid/resend", ['message[body][value]' => 'Testing 123…'], t('Resend message'));
     $sent_email = $this->getLastEmail();
     $this->assertNotContains($sent_email['params']['body'], '<b>First name</b><br />John<br /><br />');
+    $this->debug($sent_email['params']['body']);
     $this->assertEqual($sent_email['params']['body'], 'Testing 123…');
 
     // Check resent email has the same attachment.

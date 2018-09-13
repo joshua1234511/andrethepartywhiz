@@ -611,4 +611,33 @@ class WebformElementHelper {
     return $required_states;
   }
 
+  /**
+   * Randomoize an associative array of element values and disable page caching.
+   *
+   * @param array $values
+   *   An associative array of element values,
+   *
+   * @return array
+   *   Randomized associative array of element values.
+   */
+  public static function randomize(array $values) {
+    // Make sure randomized elements and options are never cached by the
+    // current page.
+    \Drupal::service('page_cache_kill_switch')->trigger();
+    return WebformArrayHelper::shuffle($values);
+  }
+
+  /**
+   * Form API callback. Remove unchecked options and returns an array of values.
+   */
+  public static function filterValues(array &$element, FormStateInterface $form_state, array &$completed_form) {
+    $values = $element['#value'];
+    $values = array_filter($values, function ($value) {
+      return $value !== 0;
+    });
+    $values = array_values($values);
+    $element['#value'] = $values;
+    $form_state->setValueForElement($element, $values);
+  }
+
 }

@@ -8,6 +8,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
+use Drupal\webform\Element\WebformMessage;
 use Drupal\webform\Utility\WebformArrayHelper;
 use Drupal\webform\Utility\WebformOptionsHelper;
 use Drupal\webform\Plugin\WebformElementManagerInterface;
@@ -264,49 +265,83 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
         $format_options[$filter->id()] = $filter->label();
       }
     }
-    $form['html_editor']['element_format'] = [
+    $form['html_editor']['format_container'] = [
+      '#type' => 'container',
+      '#states' => [
+        'visible' => [
+          ':input[name="html_editor[disabled]"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+    $form['html_editor']['format_container']['element_format'] = [
       '#type' => 'select',
       '#title' => $this->t('Element text format'),
       '#description' => $this->t('Leave blank to use the custom and recommended Webform specific HTML editor.'),
       '#empty_option' => $this->t('- None -'),
       '#options' => $format_options,
       '#default_value' => $config->get('html_editor.element_format'),
-      '#states' => [
-        'visible' => [
-          ':input[name="html_editor[disabled]"]' => ['checked' => FALSE],
-        ],
-      ],
+      '#parents' => ['html_editor', 'element_format'],
     ];
-    $form['html_editor']['mail_format'] = [
+    $form['html_editor']['format_container']['mail_format'] = [
       '#type' => 'select',
       '#title' => $this->t('Mail text format'),
       '#description' => $this->t('Leave blank to use the custom and recommended Webform specific HTML editor.'),
       '#empty_option' => $this->t('- None -'),
       '#options' => $format_options,
       '#default_value' => $config->get('html_editor.mail_format'),
+      '#parents' => ['html_editor', 'mail_format'],
       '#states' => [
         'visible' => [
           ':input[name="html_editor[disabled]"]' => ['checked' => FALSE],
         ],
       ],
     ];
-    $t_args = [
-      ':dialog_href' => Url::fromRoute('<current>', [], ['fragment' => 'edit-ui'])->toString(),
-      ':modules_href' => Url::fromRoute('system.modules_list', [], ['fragment' => 'edit-modules-core-experimental'])->toString(),
+    $form['html_editor']['format_container']['make_unused_managed_files_temporary'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Unused html editor files should be marked temporary'),
+      '#description' => $this->t('Drupal core does not automatically delete unused files because unused files could reused.'),
+      '#return_value' => TRUE,
+      '#default_value' => $config->get('html_editor.make_unused_managed_files_temporary'),
+      '#parents' => ['html_editor', 'make_unused_managed_files_temporary'],
+      '#states' => [
+        'visible' => [
+          [':input[name="html_editor[element_format]"]' => ['!value' => '']],
+          'or',
+          [':input[name="html_editor[mail_format]"]' => ['!value' => '']],
+        ],
+      ],
     ];
-    $form['html_editor']['message'] = [
+    $form['html_editor']['format_container']['warning_message'] = [
       '#type' => 'webform_message',
-      '#message_message' => $this->t('Text formats that open CKEditor image and/or link dialogs will not work properly.') . '<br />' .
-        $this->t('You may need to <a href=":dialog_href">disable dialogs</a>.', $t_args) . '<br />' .
-        $this->t('For more information see: <a href="https://www.drupal.org/node/2741877">Issue #2741877: Nested modals don\'t work</a>'),
+      '#message_message' => $this->t('Files uploaded via the CKEditor file dialog to webform elements, settings, and configuration will not be exportable.') . '<br/>' .
+        '<strong>' . $this->t('All files must be uploaded to your production environment and then copied to development and local environment.') . '</strong>',
       '#message_type' => 'warning',
       '#states' => [
         'visible' => [
-          ':input[name="html_editor[disabled]"]' => ['checked' => FALSE],
-          ':input[name="html_editor[format]"]' => ['!value' => ''],
+          [':input[name="html_editor[element_format]"]' => ['!value' => '']],
+          'or',
+          [':input[name="html_editor[mail_format]"]' => ['!value' => '']],
         ],
       ],
+      '#message_close' => TRUE,
+      '#message_storage' => WebformMessage::STORAGE_SESSION,
     ];
+    if (!$this->moduleHandler->moduleExists('imce')) {
+      $form['html_editor']['format_container']['help_message'] = [
+        '#type' => 'webform_message',
+        '#message_message' => $this->t('It is recommended to use the <a href=":href">IMCE module</a> to manage webform elements, settings, and configuration files.', [':href' => 'https://www.drupal.org/project/imce']),
+        '#message_type' => 'info',
+        '#states' => [
+          'visible' => [
+            [':input[name="html_editor[element_format]"]' => ['!value' => '']],
+            'or',
+            [':input[name="html_editor[mail_format]"]' => ['!value' => '']],
+          ],
+        ],
+        '#message_close' => TRUE,
+        '#message_storage' => WebformMessage::STORAGE_SESSION,
+      ];
+    }
 
     // Element: Location.
     $form['location'] = [
@@ -314,6 +349,7 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
       '#title' => $this->t('Location settings'),
       '#open' => TRUE,
       '#tree' => TRUE,
+      '#access' => $this->librariesManager->isIncluded('jquery.geocomplete') || $this->librariesManager->isIncluded('algolia.places'),
     ];
     $form['location']['default_google_maps_api_key'] = [
       '#type' => 'textfield',
@@ -322,6 +358,20 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
       '#default_value' => $config->get('element.default_google_maps_api_key'),
       '#access' => $this->librariesManager->isIncluded('jquery.geocomplete'),
     ];
+    $form['location']['default_algolia_places_app_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Algolia application id'),
+      '#description' => $this->t('Algolia requires users to use a valid application id and API key for more than 1,000 requests per day. By <a href="https://www.algolia.com/users/sign_up/places">signing up</a>, you can create a free Places app and access your API keys.'),
+      '#default_value' => $config->get('element.default_algolia_places_app_id'),
+      '#access' => $this->librariesManager->isIncluded('algolia.places'),
+    ];
+    $form['location']['default_algolia_places_api_key'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Algolia API key'),
+      '#default_value' => $config->get('element.default_algolia_places_api_key'),
+      '#access' => $this->librariesManager->isIncluded('algolia.places'),
+    ];
+
     // Element: Select.
     $form['select'] = [
       '#type' => 'details',
@@ -444,24 +494,18 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
     // Add warning to all password elements.
     foreach ($form['types']['excluded_elements']['#options'] as $element_type => &$excluded_element_option) {
       if (strpos($element_type, 'password') !== FALSE) {
-        $excluded_element_option['description'] = [
-          'data' => [
-            'description' => ['#markup' => $excluded_element_option['description']],
-            'message' => [
-              '#type' => 'webform_message',
-              '#message_type' => 'warning',
-              '#message_message' => $this->t('Webform submissions store passwords as plain text.') . ' ' .
-                $this->t('Any webform that includes this element should enable <a href=":href">encryption</a>.', [':href' => 'https://www.drupal.org/project/webform_encrypt']),
-              '#attributes' => ['class' => ['js-form-wrapper']],
-              '#states' => [
-                'visible' => [
-                  ':input[name="excluded_elements[' . $element_type . ']"]' => ['checked' => TRUE],
-                ],
-              ],
+        $excluded_element_option['description']['data']['message'] = [
+          '#type' => 'webform_message',
+          '#message_type' => 'warning',
+          '#message_message' => $this->t('Webform submissions store passwords as plain text.') . ' ' .
+            $this->t('Any webform that includes this element should enable <a href=":href">encryption</a>.', [':href' => 'https://www.drupal.org/project/webform_encrypt']),
+          '#attributes' => ['class' => ['js-form-wrapper']],
+          '#states' => [
+            'visible' => [
+              ':input[name="excluded_elements[' . $element_type . ']"]' => ['checked' => TRUE],
             ],
           ],
         ];
-
       }
     }
 
@@ -563,6 +607,7 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
     // Excluded elements.
     $excluded_elements = $this->convertIncludedToExcludedPluginIds($this->elementManager, $form_state->getValue('excluded_elements'));
 
+    // Update config and submit form.
     $config = $this->config('webform.settings');
     $config->set('element', $form_state->getValue('element') +
       $form_state->getValue('checkbox') +
@@ -573,9 +618,11 @@ class WebformAdminConfigElementsForm extends WebformAdminConfigBaseForm {
     $config->set('html_editor', $form_state->getValue('html_editor'));
     $config->set('file', $form_state->getValue('file'));
     $config->set('format', $format);
-    $config->save();
-
     parent::submitForm($form, $form_state);
+
+    // Reset libraries cached.
+    // @see webform_library_info_build()
+    \Drupal::service('library.discovery')->clearCachedDefinitions();
   }
 
   /**

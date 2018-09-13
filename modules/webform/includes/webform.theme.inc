@@ -119,6 +119,9 @@ function webform_theme() {
       'variables' => ['element' => [], 'value' => NULL, 'webform_submission' => NULL, 'options' => [], 'file' => NULL],
     ],
 
+    'webform_email_html' => [
+      'variables' => ['subject' => '', 'body' => ''],
+    ],
     'webform_email_message_html' => [
       'variables' => ['message' => '', 'webform_submission' => NULL, 'handler' => NULL],
     ],
@@ -276,6 +279,21 @@ function webform_preprocess_radios(&$variables) {
 /******************************************************************************/
 
 /**
+ * Prepares variables for datetime form element templates.
+ */
+function webform_preprocess_datetime_form(&$variables) {
+  if (!WebformElementHelper::isWebformElement($variables['element'])) {
+    return;
+  }
+
+  // Add .container-inline to datetime form wrapper which is missing from the
+  // stable base theme.
+  // @see core/themes/classy/templates/form/datetime-form.html.twig
+  // @see core/themes/stable/templates/form/datetime-form.html.twig
+  $variables['attributes']['class'][] = 'container-inline';
+}
+
+/**
  * Prepares variables for details element templates.
  */
 function webform_preprocess_details(&$variables) {
@@ -315,6 +333,25 @@ function webform_preprocess_fieldset(&$variables) {
 
   $element = &$variables['element'];
 
+  // If the description is displayed 'before' we need to move it to the
+  // fieldset's prefix.
+  // @see fieldset.html.twig
+  if (isset($element['#description_display']) && $element['#description_display'] === 'before' && !empty($variables['description']['content'])) {
+    if (isset($variables['prefix'])) {
+      if (is_array($variables['prefix'])) {
+        $variables['prefix'] = ['prefix' => $variables['prefix']];
+      }
+      else {
+        $variables['prefix'] = ['prefix' => ['#markup' => $variables['prefix']] ];
+      }
+    }
+    else {
+      $variables['prefix'] = [];
+    }
+    $variables['prefix']['description'] = $variables['description']['content'];
+    unset($variables['description']['content']);
+  }
+
   // Apply inline title defined by radios, checkboxes, and buttons.
   // @see \Drupal\webform\Plugin\WebformElement\OptionsBase::prepare
   if (isset($element['#_title_display'])) {
@@ -322,7 +359,7 @@ function webform_preprocess_fieldset(&$variables) {
   }
 
   // Add .js-webform-form-type-* class to be used JavaScript and #states API.
-  // @see js/webform.element.location.js
+  // @see js/webform.element.location.geocomplete.js
   // @see js/webform.states.js
   if (isset($element['#type'])) {
     $variables['attributes']['class'][] = 'js-webform-type-' . Html::getClass($element['#type']);
@@ -513,7 +550,17 @@ function _webform_preprocess_element(array &$variables, $title_parents = ['title
   // @see template_preprocess_details
   // @see Issue #2896169: Details elements have incorrect aria-describedby attributes
   if (!empty($element['#description'])) {
-    $description = (is_array($element['#description'])) ? $element['#description'] : ['#markup' => $element['#description']];
+    // Convert the current description to simple #markup.
+    if (is_array($element['#description'])) {
+      // Make a copy of the element's #description so that it can be rendered
+      // without affecting the element's #description.
+      $element_description = $element['#description'];
+      $description = ['#markup' => \Drupal::service('renderer')->render($element_description)];
+    }
+    else {
+      $description = ['#markup' => $element['#description']];
+    }
+
     if ($type === 'details') {
       $description_attributes = [];
       if (!empty($element['#id'])) {

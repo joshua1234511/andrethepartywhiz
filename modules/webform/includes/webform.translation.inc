@@ -60,8 +60,8 @@ function webform_form_config_translation_add_form_alter(&$form, FormStateInterfa
       $translation_langcode = $form_state->get('config_translation_language')->getId();;
       $source_elements = $translation_manager->getSourceElements($webform);
       $translation_elements = $translation_manager->getTranslationElements($webform, $translation_langcode);
-      $source_value = trim(Yaml::encode($source_elements));
-      $translation_value = trim(Yaml::encode($translation_elements));
+      $source_value = WebformYaml::encode($source_elements);
+      $translation_value = WebformYaml::encode($translation_elements);
 
       _webform_form_config_translate_add_form_alter_yaml_element($config_element['elements'], $source_value, $translation_value);
 
@@ -228,21 +228,5 @@ function webform_lingotek_config_entity_translation_presave(ConfigEntityInterfac
       $translation->setOptions($data['options']);
       $data['options'] = Yaml::encode($data['options']);
       break;
-  }
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function webform_form_lingotek_config_management_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $entity_type = $form['filters']['wrapper']['bundle']['#default_value'];
-  if (!in_array($entity_type, ['webform', 'webform_options'])) {
-    return;
-  }
-
-  $entities = \Drupal::entityTypeManager()->getStorage($entity_type)->loadMultiple(array_keys($form['table']['#options']));
-  foreach ($form['table']['#options'] as $entity_id => &$option) {
-    $entity = $entities[$entity_id];
-    $option['title'] = $entity->toLink($entity->label() . ' ' . $entity_type);
   }
 }

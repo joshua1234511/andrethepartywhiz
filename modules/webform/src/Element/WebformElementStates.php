@@ -2,6 +2,7 @@
 
 namespace Drupal\webform\Element;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\OptGroup;
 use Drupal\Core\Serialization\Yaml;
@@ -92,7 +93,7 @@ class WebformElementStates extends FormElement {
         '#title' => t('Conditional Logic (YAML)'),
         '#title_display' => 'invisible',
         '#mode' => 'yaml',
-        '#default_value' => WebformYaml::tidy(Yaml::encode($element['#default_value'])),
+        '#default_value' => WebformYaml::encode($element['#default_value']),
         '#description' => t('Learn more about Drupal\'s <a href=":href">Form API #states</a>.', [':href' => 'https://www.lullabot.com/articles/form-api-states']),
       ];
       return $element;
@@ -137,11 +138,15 @@ class WebformElementStates extends FormElement {
       $states = (isset($element['#default_value'])) ? static::convertFormApiStatesToStatesArray($element['#default_value']) : [];
     }
 
+    // Track state row indexes for disable/enabled warning message.
+    $state_row_indexes = [];
+
     // Build state and conditions rows.
     $row_index = 0;
     $rows = [];
     foreach ($states as $state_settings) {
       $rows[$row_index] = static::buildStateRow($element, $state_settings, $table_id, $row_index, $ajax_settings);
+      $state_row_indexes[] = $row_index;
       $row_index++;
       foreach ($state_settings['conditions'] as $condition) {
         $rows[$row_index] = static::buildConditionRow($element, $condition, $table_id, $row_index, $ajax_settings);
@@ -152,6 +157,7 @@ class WebformElementStates extends FormElement {
     // Generator empty state with conditions rows.
     if ($row_index < $number_of_rows) {
       $rows[$row_index] = static::buildStateRow($element, [], $table_id, $row_index, $ajax_settings);;
+      $state_row_indexes[] = $row_index;
       $row_index++;
       while ($row_index < $number_of_rows) {
         $rows[$row_index] = static::buildConditionRow($element, [], $table_id, $row_index, $ajax_settings);
@@ -178,6 +184,23 @@ class WebformElementStates extends FormElement {
         '#name' => $table_id . '_add',
       ];
     }
+
+    // Display a warning message when a state is set to disabled or enabled.
+    $total_state_row_indexes = count($state_row_indexes);
+    $triggers = [];
+    foreach ($state_row_indexes as $index => $row_index) {
+      $id = Html::getId('edit-' . implode('-', $element['#parents']) . '-states-' . $row_index . '-state');
+      $triggers[] = [':input[data-drupal-selector="' . $id . '"]' => ['value' => ['pattern' => '^(disabled|enabled)$']]];
+      if (($index + 1) < $total_state_row_indexes) {
+        $triggers[] = 'or';
+      }
+    }
+    $element['disabled_message'] = [
+      '#type' => 'webform_message',
+      '#message_message' => t('<a href="https://www.w3schools.com/tags/att_input_disabled.asp" target="_blank">Disabled</a> elements do not submit data back to the server and the element\'s server-side default or current value will be preserved and saved to the database.'),
+      '#message_type' => 'warning',
+      '#states' => ['visible' => $triggers],
+    ];
 
     $element['#attached']['library'][] = 'webform/webform.element.states';
 

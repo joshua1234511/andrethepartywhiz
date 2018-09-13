@@ -3,7 +3,6 @@
 namespace Drupal\webform\Controller;
 
 use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Controller\ControllerBase;
@@ -17,13 +16,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Controller for all webform elements.
  */
 class WebformPluginElementController extends ControllerBase implements ContainerInjectionInterface {
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
 
   /**
    * The module handler.
@@ -49,8 +41,6 @@ class WebformPluginElementController extends ControllerBase implements Container
   /**
    * Constructs a WebformPluginElementController object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
@@ -58,8 +48,7 @@ class WebformPluginElementController extends ControllerBase implements Container
    * @param \Drupal\webform\Plugin\WebformElementManagerInterface $element_manager
    *   A webform element plugin manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, ElementInfoManagerInterface $element_info, WebformElementManagerInterface $element_manager) {
-    $this->configFactory = $config_factory;
+  public function __construct(ModuleHandlerInterface $module_handler, ElementInfoManagerInterface $element_info, WebformElementManagerInterface $element_manager) {
     $this->moduleHandler = $module_handler;
     $this->elementInfo = $element_info;
     $this->elementManager = $element_manager;
@@ -70,7 +59,6 @@ class WebformPluginElementController extends ControllerBase implements Container
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
       $container->get('module_handler'),
       $container->get('plugin.manager.element_info'),
       $container->get('plugin.manager.webform.element')
@@ -154,7 +142,19 @@ class WebformPluginElementController extends ControllerBase implements Container
         }
 
         // Description.
-        $description = new FormattableMarkup('<strong>@label</strong><br />@description', ['@label' => $webform_element->getPluginLabel(), '@description' => $webform_element->getPluginDescription()]);
+        $description = [
+          'data' => [
+            'title_description' => ['#markup' => new FormattableMarkup('<strong>@label</strong><br />@description', ['@label' => $webform_element->getPluginLabel(), '@description' => $webform_element->getPluginDescription()])],
+          ],
+        ];
+        // Add deprecated warning.
+        if (!empty($webform_element_plugin_definition['deprecated'])) {
+          $description['data']['deprecated'] = [
+            '#type' => 'webform_message',
+            '#message_message' => $webform_element_plugin_definition['deprecated_message'],
+            '#message_type' => 'warning',
+          ];
+        }
 
         // Parent classes.
         $parent_classes = WebformReflectionHelper::getParentClasses($webform_element, 'WebformElementBase');
@@ -185,6 +185,7 @@ class WebformPluginElementController extends ControllerBase implements Container
           'multiline' => $webform_element->isMultiline($element),
           'default_key' => $webform_element_plugin_definition['default_key'],
           'states_wrapper' => $webform_element_plugin_definition['states_wrapper'],
+          'deprecated' => $webform_element_plugin_definition['deprecated'],
         ];
         $webform_info = [];
         foreach ($webform_info_definitions as $key => $value) {

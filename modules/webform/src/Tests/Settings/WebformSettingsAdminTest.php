@@ -2,7 +2,6 @@
 
 namespace Drupal\webform\Tests\Settings;
 
-use Drupal\Component\Serialization\Yaml;
 use Drupal\webform\Tests\WebformTestBase;
 use Drupal\webform\Utility\WebformYaml;
 
@@ -18,7 +17,7 @@ class WebformSettingsAdminTest extends WebformTestBase {
    *
    * @var array
    */
-  public static $modules = ['block', 'node', 'webform', 'webform_ui'];
+  public static $modules = ['block', 'node', 'views', 'webform', 'webform_ui', 'webform_node'];
 
   /**
    * Webforms to load.
@@ -68,8 +67,8 @@ class WebformSettingsAdminTest extends WebformTestBase {
       $this->assertEqual($updated_data, $original_data, 'Updated admin settings via the UI did not lose or change any data');
 
       // DEBUG:
-      $original_yaml = WebformYaml::tidy(Yaml::encode($original_data));
-      $updated_yaml = WebformYaml::tidy(Yaml::encode($updated_data));
+      $original_yaml = WebformYaml::encode($original_data);
+      $updated_yaml = WebformYaml::encode($updated_data);
       $this->verbose('<pre>' . $original_yaml . '</pre>');
       $this->verbose('<pre>' . $updated_yaml . '</pre>');
       $this->debug(array_diff(explode(PHP_EOL, $original_yaml), explode(PHP_EOL, $updated_yaml)));

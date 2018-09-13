@@ -3,6 +3,7 @@ status: open
 dependencies: {  }
 open: null
 close: null
+weight: 0
 uid: 1
 template: false
 archive: false
@@ -15,6 +16,7 @@ elements: |
     '#type': webform_computed_token
     '#title': computed_token
     '#value': '[webform_submission:node:title]'
+  
 css: ''
 javascript: ''
 settings:
@@ -45,14 +47,20 @@ settings:
   form_submit_back: false
   form_autofocus: false
   form_details_toggle: false
-  form_login: false
-  form_login_message: ''
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
   submission_label: ''
   submission_log: false
+  submission_views: {  }
+  submission_views_replace: {  }
   submission_user_columns: {  }
   submission_user_duplicate: false
-  submission_login: false
-  submission_login_message: ''
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
   submission_exception_message: ''
   submission_locked_message: ''
   previous_submission_message: ''
@@ -151,4 +159,3 @@ access:
     users: {  }
     permissions: {  }
 handlers: {  }
-weight: 0

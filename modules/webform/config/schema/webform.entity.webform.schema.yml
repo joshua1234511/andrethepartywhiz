@@ -131,12 +131,18 @@ webform.webform.*:
         form_reset:
           type: boolean
           label: 'Display reset button'
-        form_login:
-          type: boolean
-          label: 'Redirect to login when access denied to webform'
-        form_login_message:
+        form_access_denied:
+          type: string
+          label: 'Form access denied action'
+        form_access_denied_title:
+          type: label
+          label: 'Form access denied title'
+        form_access_denied_message:
           type: text
-          label: 'Login message when access denied to webform'
+          label: 'Form access denied message'
+        form_access_denied_attributes:
+          type: ignore
+          label: 'Form access denied message attributes'
         submission_label:
           type: label
           label: 'Default submission label'
@@ -149,6 +155,53 @@ webform.webform.*:
         submission_log:
           type: boolean
           label: 'Submission logging'
+        submission_views:
+          type: sequence
+          label: 'Submission views'
+          sequence:
+            type: mapping
+            label:  'Submission view'
+            mapping:
+              title:
+                type: text
+                label: 'Title'
+              view:
+                type: string
+                label: 'View name / Display ID'
+              webform_routes:
+                type: sequence
+                label: 'Apply to webform'
+                sequence:
+                  type: string
+                  label: 'Route'
+              node_routes:
+                type: sequence
+                label: 'Apply to node'
+                sequence:
+                  type: string
+                  label: 'Route'
+        submission_views_replace:
+          type: mapping
+          label: 'Submission view replace'
+          mapping:
+            global_routes:
+              type: sequence
+              label: 'Replace to global'
+              sequence:
+                type: string
+                label: 'Route'
+            webform_routes:
+              type: sequence
+              label: 'Replace to webform'
+              sequence:
+                type: string
+                label: 'Route'
+            node_routes:
+              type: sequence
+              label: 'Replace to node'
+              sequence:
+                type: string
+                label: 'Route'
         submission_user_columns:
           type: sequence
           label: 'Submission user columns'
@@ -158,12 +211,18 @@ webform.webform.*:
         submission_user_duplicate:
           type: boolean
           label: 'Submission user duplicate'
-        submission_login:
-          type: boolean
-          label: 'Redirect to login when access denied to submission'
-        submission_login_message:
+        submission_access_denied:
+          type: string
+          label: 'Submission access denied action'
+        submission_access_denied_title:
+          type: label
+          label: 'Submission access denied title'
+        submission_access_denied_message:
           type: text
-          label: 'Login message when access denied to submission'
+          label: 'Submission access denied message'
+        submission_access_denied_attributes:
+          type: ignore
+          label: 'Submission access denied message attributes'
         previous_submission_message:
           type: text
           label: 'Previous submission message'
@@ -261,7 +320,7 @@ webform.webform.*:
           type: string
           label: 'Confirmation URL'
         confirmation_title:
-          type: text
+          type: label
           label: 'Confirmation title'
         confirmation_message:
           type: text
@@ -330,229 +389,30 @@ webform.webform.*:
           type: boolean
           label: 'Allow updates using token'
     access:
-      type: mapping
-      label: 'Access'
-      mapping:
-        create:
-          type: mapping
-          label: 'Create submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        view_any:
-          type: mapping
-          label: 'View any submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        update_any:
-          type: mapping
-          label: 'Update any submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        delete_any:
-          type: mapping
-          label: 'Delete any submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        purge_any:
-          type: mapping
-          label: 'Purge any submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        view_own:
-          type: mapping
-          label: 'View own submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        update_own:
-          type: mapping
-          label: 'Update own submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        delete_own:
-          type: mapping
-          label: 'Delete own submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        administer:
-          type: mapping
-          label: 'Administer webform and submissions'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
-        test:
-          type: mapping
-          label: 'Test webform'
-          mapping:
-            roles:
-              type: sequence
-              label: 'Roles'
-              sequence:
-                type: string
-                label: 'Role'
-            users:
-              type: sequence
-              label: 'Users'
-              sequence:
-                type: integer
-                label: 'User IDs'
-            permissions:
-              type: sequence
-              label: 'Permissions'
-              sequence:
-                type: string
-                label: 'Permission'
+      type: sequence
+      label: 'Access Rules'
+      sequence:
+        type: mapping
+        label:  'Access Rule'
+        mapping:
+          roles:
+            type: sequence
+            label: 'Roles'
+            sequence:
+              type: string
+              label: 'Role'
+          users:
+            type: sequence
+            label: 'Users'
+            sequence:
+              type: integer
+              label: 'User IDs'
+          permissions:
+            type: sequence
+            label: 'Permissions'
+            sequence:
+              type: string
+              label: 'Permission'
     handlers:
       type: sequence
       label: 'Webform handlers'

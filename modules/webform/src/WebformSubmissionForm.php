@@ -92,7 +92,7 @@ class WebformSubmissionForm extends ContentEntityForm {
   /**
    * The webform submission conditions (#states) validator.
    *
-   * @var \Drupal\webform\WebformSubmissionConditionsValidator
+   * @var \Drupal\webform\WebformSubmissionConditionsValidatorInterface
    */
   protected $conditionsValidator;
 
@@ -334,7 +334,7 @@ class WebformSubmissionForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
+  public function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
     // NOTE: We are not copying form values to the entity because
     // webform element keys can override webform submission properties.
     /* @var $webform_submission \Drupal\webform\WebformSubmissionInterface */
@@ -477,12 +477,12 @@ class WebformSubmissionForm extends ContentEntityForm {
     // Prepend webform submission data using the default view without the data.
     if (!$webform_submission->isNew() && !$webform_submission->isDraft()) {
       $form['navigation'] = [
-        '#theme' => 'webform_submission_navigation',
+        '#type' => 'webform_submission_navigation',
         '#webform_submission' => $webform_submission,
         '#weight' => -20,
       ];
       $form['information'] = [
-        '#theme' => 'webform_submission_information',
+        '#type' => 'webform_submission_information',
         '#webform_submission' => $webform_submission,
         '#source_entity' => $this->sourceEntity,
         '#weight' => -19,
@@ -1436,6 +1436,10 @@ class WebformSubmissionForm extends ContentEntityForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+
+    // Server side #states API submit.
+    $this->conditionsValidator->submitForm($form, $form_state);
+
     // Submit webform via webform handler.
     $this->getWebform()->invokeHandlers('submitForm', $form, $form_state, $this->entity);
   }
@@ -1470,7 +1474,7 @@ class WebformSubmissionForm extends ContentEntityForm {
           static::rebuild($form, $form_state);
         }
       }
-      elseif ($confirmation_type === WebformInterface::CONFIRMATION_MESSAGE) {
+      elseif ($confirmation_type === WebformInterface::CONFIRMATION_MESSAGE || $confirmation_type === WebformInterface::CONFIRMATION_NONE) {
         static::reset($form, $form_state);
       }
     }
@@ -1492,7 +1496,7 @@ class WebformSubmissionForm extends ContentEntityForm {
     // Make sure the uri and remote addr are set correctly because
     // Ajax requests can cause these values to be reset.
     if ($webform_submission->isNew()) {
-      if (preg_match('/\.webform\.test$/', $this->getRouteMatch()->getRouteName())) {
+      if (preg_match('/\.webform\.test_form$/', $this->getRouteMatch()->getRouteName())) {
         // For test submissions use the source URL.
         $source_url = $webform_submission->set('uri', NULL)->getSourceUrl()->setAbsolute(FALSE);
         $uri = preg_replace('#^' . base_path() . '#', '/', $source_url->toString());
@@ -1676,7 +1680,7 @@ class WebformSubmissionForm extends ContentEntityForm {
       }
       else {
         $current_page = $this->entity->getCurrentPage();
-        if ($current_page && isset($pages[$current_page]) && $this->draftEnabled()) {
+        if ($current_page && isset($pages[$current_page])) {
           $form_state->set('current_page', $current_page);
         }
         else {
@@ -1914,6 +1918,9 @@ class WebformSubmissionForm extends ContentEntityForm {
             'content' => $message,
           ]);
         }
+        return;
+
+      case WebformInterface::CONFIRMATION_NONE:
         return;
 
       case WebformInterface::CONFIRMATION_DEFAULT:

@@ -338,16 +338,7 @@ webform.wizard.track:
 
 # Element.
 
-# Drupal 8.3.x and below
-webform.element.buttons.buttonset:
-  version: VERSION
-  js:
-    js/webform.element.buttons.buttonset.js: {}
-  dependencies:
-    - core/jquery.ui.button
-
-# Drupal 8.4.x and above
-webform.element.buttons.checkboxradio:
+webform.element.buttons:
   version: VERSION
   js:
     # Issue #2906737: With the new jquery 3 checkboxradio and selectmenu error.
@@ -355,7 +346,7 @@ webform.element.buttons.checkboxradio:
     /core/assets/vendor/jquery.ui/ui/form-reset-mixin-min.js: { minified: true }
     /core/assets/vendor/jquery.ui/ui/escape-selector-min.js: { minified: true }
     /core/assets/vendor/jquery.ui/ui/widgets/checkboxradio-min.js: { minified: true }
-    js/webform.element.buttons.checkboxradio.js: {}
+    js/webform.element.buttons.js: {}
   # Issue #2933980: JQuery UI CSS dependencies are not met in core.
   # @see https://www.drupal.org/node/2933980
   css:
@@ -616,17 +607,29 @@ webform.element.likert:
     component:
       css/webform.element.likert.css: {}
 
-webform.element.location:
+webform.element.location.geocomplete:
   version: VERSION
   css:
     component:
-      css/webform.element.location.css: {}
+      css/webform.element.location.geocomplete.css: {}
   js:
-    js/webform.element.location.js: {}
+    js/webform.element.location.geocomplete.js: {}
   dependencies:
     - core/drupal
     - core/jquery.once
     - webform/libraries.jquery.geocomplete
+
+webform.element.location.places:
+  version: VERSION
+  css:
+    component:
+      css/webform.element.location.places.css: {}
+  js:
+    js/webform.element.location.places.js: {}
+  dependencies:
+  - core/drupal
+  - core/jquery.once
+  - webform/libraries.algolia.places
 
 webform.element.message:
   version: VERSION
@@ -778,6 +781,8 @@ webform.element.text_format:
 
 webform.element.tableselect:
   version: VERSION
+  js:
+    js/webform.element.tableselect.js: {}
   css:
     component:
       css/webform.element.tableselect.css: {}
@@ -853,14 +858,14 @@ imce.input:
 
 libraries.codemirror.text:
   remote: https://github.com/codemirror/codemirror
-  version: &webform_codemirror_version '5.39.2'
+  version: &webform_codemirror_version '5.40.0'
   license: &webform_codemirror_license
     name: MIT
     url: http://codemirror.net/LICENSE
     gpl-compatible: true
   cdn: &webform_codemirror_cdn
-    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/
-    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/
+    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.40.0/
+    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.40.0/
   css:
     component:
       /libraries/codemirror/lib/codemirror.css: {}
@@ -925,7 +930,6 @@ libraries.codemirror.php:
   js:
     /libraries/codemirror/mode/php/php.js: {}
     /libraries/codemirror/mode/clike/clike.js: {}
-
   dependencies:
     - webform/libraries.codemirror.text
 
@@ -937,6 +941,18 @@ libraries.codemirror.twig:
     /libraries/codemirror/mode/twig/twig.js: {}
   dependencies:
     - webform/libraries.codemirror.text
+
+libraries.algolia.places:
+  remote: https://github.com/algolia/places
+  version: '1.10.0'
+  license:
+    name: MIT
+    url: https://github.com/algolia/places/blob/master/LICENSE
+    gpl-compatible: true
+  cdn:
+    /libraries/algolia.places/dist/cdn/: https://cdn.jsdelivr.net/npm/places.js@1.0.0/dist/cdn/
+  js:
+    /libraries/algolia.places/dist/cdn/places.js: {}
 
 libraries.jquery.geocomplete:
   remote: http://ubilabs.github.io/geocomplete/

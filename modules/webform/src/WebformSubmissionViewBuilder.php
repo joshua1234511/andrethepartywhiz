@@ -2,7 +2,6 @@
 
 namespace Drupal\webform;
 
-use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -23,7 +22,7 @@ class WebformSubmissionViewBuilder extends EntityViewBuilder implements WebformS
    *
    * @var \Drupal\webform\WebformRequestInterface
    */
-  protected $requestManager;
+  protected $requestHandler;
 
   /**
    * The webform element manager service.
@@ -57,7 +56,7 @@ class WebformSubmissionViewBuilder extends EntityViewBuilder implements WebformS
    */
   public function __construct(EntityTypeInterface $entity_type, EntityManagerInterface $entity_manager, LanguageManagerInterface $language_manager, WebformRequestInterface $webform_request, WebformElementManagerInterface $element_manager, WebformSubmissionConditionsValidatorInterface $conditions_validator) {
     parent::__construct($entity_type, $entity_manager, $language_manager);
-    $this->requestManager = $webform_request;
+    $this->requestHandler = $webform_request;
     $this->elementManager = $element_manager;
     $this->conditionsValidator = $conditions_validator;
   }
@@ -110,7 +109,7 @@ class WebformSubmissionViewBuilder extends EntityViewBuilder implements WebformS
           $data = $webform_submission->toArray(TRUE, TRUE);
           $build[$id]['data'] = [
             '#theme' => 'webform_codemirror',
-            '#code' => WebformYaml::tidy(Yaml::encode($data)),
+            '#code' => WebformYaml::encode($data),
             '#type' => 'yaml',
           ];
           break;

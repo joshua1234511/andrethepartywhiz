@@ -162,10 +162,11 @@ class WebformAdminConfigFormsForm extends WebformAdminConfigBaseForm {
       '#required' => TRUE,
       '#default_value' => $settings['default_form_confidential_message'],
     ];
-    $form['form_settings']['default_form_login_message'] = [
+    $form['form_settings']['default_form_access_denied_message'] = [
       '#type' => 'webform_html_editor',
-      '#title' => $this->t('Default login message when access denied to webform'),
-      '#default_value' => $settings['default_form_login_message'],
+      '#title' => $this->t('Default access denied message'),
+      '#required' => TRUE,
+      '#default_value' => $settings['default_form_access_denied_message'],
     ];
     $form['form_settings']['default_form_required_label'] = [
       '#type' => 'textfield',
@@ -600,10 +601,11 @@ class WebformAdminConfigFormsForm extends WebformAdminConfigBaseForm {
       $settings['dialog_options'][$dialog_name] = array_filter($dialog_options);
     }
 
+    // Update config and submit form.
     $config = $this->config('webform.settings');
     $config->set('settings', $settings + $config->get('settings'));
     $config->set('third_party_settings', $form_state->getValue('third_party_settings') ?: []);
-    $config->save();
+    parent::submitForm($form, $form_state);
 
     /* Update paths */
 
@@ -614,8 +616,6 @@ class WebformAdminConfigFormsForm extends WebformAdminConfigBaseForm {
         $webform->updatePaths();
       }
     }
-
-    parent::submitForm($form, $form_state);
   }
 
 }

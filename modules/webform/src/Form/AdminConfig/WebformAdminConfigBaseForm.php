@@ -3,7 +3,9 @@
 namespace Drupal\webform\Form\AdminConfig;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Core\Config\Config;
 use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\webform\Plugin\WebformElement\TableSelect;
 
 /**
@@ -18,8 +20,19 @@ abstract class WebformAdminConfigBaseForm extends ConfigFormBase {
     return ['webform.settings'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $config = $this->config('webform.settings');
+    _webform_config_update($config);
+    $config->save();
+
+    parent::submitForm($form, $form_state);
+  }
+
   /****************************************************************************/
-  // Exclude plugins
+  // Exclude plugins.
   /****************************************************************************/
 
   /**
@@ -47,10 +60,23 @@ abstract class WebformAdminConfigBaseForm extends ConfigFormBase {
     $options = [];
     foreach ($plugins as $id => $plugin_definition) {
       $ids[$id] = $id;
+
+      $description = [
+        'data' => [
+          'content' => ['#markup' => $plugin_definition['description']],
+        ],
+      ];
+      if (!empty($plugin_definition['deprecated'])) {
+        $description['data']['deprecated'] = [
+          '#type' => 'webform_message',
+          '#message_message' => $plugin_definition['deprecated_message'],
+          '#message_type' => 'warning',
+        ];
+      }
       $options[$id] = [
         'title' => $plugin_definition['label'],
         'id' => $plugin_definition['id'],
-        'description' => $plugin_definition['description'],
+        'description' => $description,
       ];
     }
 

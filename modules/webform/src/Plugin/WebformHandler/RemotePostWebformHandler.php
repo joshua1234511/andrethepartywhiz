@@ -263,6 +263,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
       '#required' => TRUE,
       '#options' => [
         'POST' => 'POST',
+        'PUT' => 'PUT',
         'GET' => 'GET',
       ],
       '#parents' => ['settings', 'method'],
@@ -278,8 +279,8 @@ class RemotePostWebformHandler extends WebformHandlerBase {
       ],
       '#parents' => ['settings', 'type'],
       '#states' => [
-        'visible' => [':input[name="settings[method]"]' => ['value' => 'POST']],
-        'required' => [':input[name="settings[method]"]' => ['value' => 'POST']],
+        '!visible' => [':input[name="settings[method]"]' => ['value' => 'GET']],
+        '!required' => [':input[name="settings[method]"]' => ['value' => 'GET']],
       ],
       '#default_value' => $this->configuration['type'],
     ];
@@ -436,7 +437,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
 
     $request_url = $this->configuration[$state . '_url'];
     $request_method = (!empty($this->configuration['method'])) ? $this->configuration['method'] : 'POST';
-    $request_type = ($request_method == 'POST') ? $this->configuration['type'] : NULL;
+    $request_type = ($request_method !== 'GET') ? $this->configuration['type'] : NULL;
 
     // Get request options with tokens replaced.
     $request_options = (!empty($this->configuration['custom_options'])) ? Yaml::decode($this->configuration['custom_options']) : [];
@@ -450,8 +451,9 @@ class RemotePostWebformHandler extends WebformHandlerBase {
         $response = $this->httpClient->get($request_url, $request_options);
       }
       else {
+        $method = strtolower($request_method);
         $request_options[($request_type == 'json' ? 'json' : 'form_params')] = $this->getRequestData($state, $webform_submission);
-        $response = $this->httpClient->post($request_url, $request_options);
+        $response = $this->httpClient->$method($request_url, $request_options);
       }
     }
     catch (RequestException $request_exception) {
@@ -541,16 +543,17 @@ class RemotePostWebformHandler extends WebformHandlerBase {
         continue;
       }
 
-      /** @var \Drupal\file\FileInterface $file */
-      $file = File::load($element_value);
-      if (!$file) {
-        continue;
+      if ($element_plugin->hasMultipleValues($element)) {
+        foreach ($element_value as $fid) {
+          $data['_' . $element_key][] = $this->getResponseFileData($fid);
+        }
       }
-
-      $data[$element_key . '__name'] = $file->getFilename();
-      $data[$element_key . '__uri'] = $file->getFileUri();
-      $data[$element_key . '__mime'] = $file->getMimeType();
-      $data[$element_key . '__data'] = base64_encode(file_get_contents($file->getFileUri()));
+      else {
+        $data['_' . $element_key] = $this->getResponseFileData($element_value);
+        // @deprecated in Webform 8.x-5.0-rc17. Use new format
+        // The code needs to be removed before 8.x-5.0 or 8.x-6.x.
+        $data += $this->getResponseFileData($element_value, $element_key . '__');
+      }
     }
 
     // Append custom data.
@@ -566,6 +569,34 @@ class RemotePostWebformHandler extends WebformHandlerBase {
     // Replace tokens.
     $data = $this->tokenManager->replace($data, $webform_submission);
 
+    return $data;
+  }
+
+  /**
+   * Get response file data.
+   *
+   * @param int $fid
+   *   A file id
+   * @param string|null $prefix
+   *   A prefix to prepended to data.
+   *
+   * @return array
+   *   An associative array containing file data (name, uri, mime, and data).
+   */
+  protected function getResponseFileData($fid, $prefix = '') {
+    /** @var \Drupal\file\FileInterface $file */
+    $file = File::load($fid);
+    if (!$file) {
+      return [];
+    }
+
+    $data = [];
+    $data[$prefix . 'id'] = (int) $file->id();
+    $data[$prefix . 'name'] = $file->getFilename();
+    $data[$prefix . 'uri'] = $file->getFileUri();
+    $data[$prefix . 'mime'] = $file->getMimeType();
+    $data[$prefix . 'uuid'] = $file->uuid();
+    $data[$prefix . 'data'] = base64_encode(file_get_contents($file->getFileUri()));
     return $data;
   }
 

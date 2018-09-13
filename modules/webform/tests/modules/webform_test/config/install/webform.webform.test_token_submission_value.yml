@@ -6,6 +6,7 @@ dependencies:
       - webform_test
 open: null
 close: null
+weight: 0
 uid: null
 template: false
 archive: false
@@ -114,6 +115,7 @@ elements: |
       '#type': textfield
       '#title': last_name
       '#default_value': Smith
+  
 css: ''
 javascript: ''
 settings:
@@ -144,14 +146,20 @@ settings:
   form_submit_back: false
   form_autofocus: false
   form_details_toggle: false
-  form_login: false
-  form_login_message: ''
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
   submission_label: ''
   submission_log: false
+  submission_views: {  }
+  submission_views_replace: {  }
   submission_user_columns: {  }
   submission_user_duplicate: false
-  submission_login: false
-  submission_login_message: ''
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
   submission_exception_message: ''
   submission_locked_message: ''
   previous_submission_message: ''
@@ -275,6 +283,7 @@ settings:
     <tr><th width="50%">webform:random:missing</th><td width="50%">[webform:random:missing]</td></tr>
     <tr><th width="50%">webform:random:missing:clear</th><td width="50%">[webform:random:missing:clear]</td></tr>
     </table>
+    
   confirmation_url: ''
   confirmation_attributes: {  }
   confirmation_back: true
@@ -341,4 +350,3 @@ access:
     users: {  }
     permissions: {  }
 handlers: {  }
-weight: 0

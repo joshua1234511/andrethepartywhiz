@@ -6,6 +6,7 @@ dependencies:
       - webform_test
 open: null
 close: null
+weight: 0
 uid: null
 template: false
 archive: false
@@ -17,18 +18,21 @@ elements: |
   test:
     '#type': textfield
     '#title': 'Text field'
+  
 css: |
   .webform-submission-form {
     background-color: #cccccc;
     display: none;
     padding: 20px;
   }
+  
 javascript: |
   (function ($) {
     $(function() {
       $('.webform-submission-form').fadeIn(3000);
     });
   })(jQuery);
+  
 settings:
   ajax: false
   ajax_scroll_top: form
@@ -57,14 +61,20 @@ settings:
   form_submit_back: false
   form_autofocus: false
   form_details_toggle: false
-  form_login: false
-  form_login_message: ''
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
   submission_label: ''
   submission_log: false
+  submission_views: {  }
+  submission_views_replace: {  }
   submission_user_columns: {  }
   submission_user_duplicate: false
-  submission_login: false
-  submission_login_message: ''
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
   submission_exception_message: ''
   submission_locked_message: ''
   previous_submission_message: ''
@@ -163,4 +173,3 @@ access:
     users: {  }
     permissions: {  }
 handlers: {  }
-weight: 0

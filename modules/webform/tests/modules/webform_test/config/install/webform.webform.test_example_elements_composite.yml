@@ -6,6 +6,7 @@ dependencies:
       - webform_test
 open: null
 close: null
+weight: 0
 uid: null
 template: false
 archive: false
@@ -111,18 +112,18 @@ elements: |
       '#title': 'Link multiple'
       '#multiple': true
       '#multiple__header': true
-  webform_location_example:
+  webform_location_geocomplete_example:
     '#type': details
     '#title': Location
     '#open': true
-    webform_location:
-      '#type': webform_location
+    webform_location_geocomplete:
+      '#type': webform_location_places
       '#title': Location
       '#map': true
       '#geolocation': true
       '#format': map
-    webform_location_multiple:
-      '#type': webform_location
+    webform_location_geocomplete_multiple:
+      '#type': webform_location_places
       '#title': 'Location multiple'
       '#map': true
       '#geolocation': true
@@ -175,6 +176,7 @@ elements: |
       '#type': text_format
       '#title': 'Text format'
       '#description': '<b>Known Issues:</b><br /><a href="https://www.drupal.org/node/997826">Issue #997826: #states doesn''t work correctly with type text_format</a><br /><a href="https://www.drupal.org/node/2625128">Issue #2625128: Text format selection stays visible when using editor and a hidden webform state</a><br /><a href="https://www.drupal.org/node/1954968">Issue #1954968: Required CKEditor fields always fail HTML5 validation</a>'
+  
 css: ''
 javascript: ''
 settings:
@@ -205,14 +207,20 @@ settings:
   form_submit_back: false
   form_autofocus: false
   form_details_toggle: false
-  form_login: false
-  form_login_message: ''
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
   submission_label: ''
   submission_log: false
+  submission_views: {  }
+  submission_views_replace: {  }
   submission_user_columns: {  }
   submission_user_duplicate: false
-  submission_login: false
-  submission_login_message: ''
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
   submission_exception_message: ''
   submission_locked_message: ''
   previous_submission_message: ''
@@ -311,4 +319,3 @@ access:
     users: {  }
     permissions: {  }
 handlers: {  }
-weight: 0

@@ -90,6 +90,31 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
   const CONFIRMATION_DEFAULT = 'default';
 
   /**
+   * Webform confirmation none.
+   */
+  const CONFIRMATION_NONE = 'none';
+
+  /**
+   * Display standard 403 access denied page.
+   */
+  const ACCESS_DENIED_DEFAULT = 'default';
+
+  /**
+   * Display customized access denied message.
+   */
+  const ACCESS_DENIED_MESSAGE = 'message';
+
+  /**
+   * Display customized 403 access denied page.
+   */
+  const ACCESS_DENIED_PAGE = 'page';
+
+  /**
+   * Redirect to user login with custom message.
+   */
+  const ACCESS_DENIED_LOGIN = 'login';
+
+  /**
    * Returns the webform's (original) langcode.
    *
    * @return string
@@ -800,7 +825,7 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
    * Invoke a handlers method.
    *
    * @param string $method
-   *   The handle method to be invoked.
+   *   The handler method to be invoked.
    * @param mixed $data
    *   The argument to passed by reference to the handler method.
    * @param mixed $context1
@@ -814,7 +839,7 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
    * Invoke elements method.
    *
    * @param string $method
-   *   The handle method to be invoked.
+   *   The handler method to be invoked.
    * @param mixed $data
    *   The argument to passed by reference to the handler method.
    * @param mixed $context1

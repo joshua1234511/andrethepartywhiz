@@ -6,6 +6,7 @@ dependencies:
       - webform_test
 open: null
 close: null
+weight: 0
 uid: null
 template: false
 archive: false
@@ -324,14 +325,11 @@ elements: |
             Male: Male
             Female: Female
       '#default_value':
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
       '#states':
         visible:
@@ -616,8 +614,8 @@ elements: |
         required:
           ':input[name="visible_trigger"]':
             checked: true
-    visible_webform_location:
-      '#type': webform_location
+    visible_webform_location_places:
+      '#type': webform_location_places
       '#title': Location
       '#map': true
       '#geolocation': true
@@ -1304,14 +1302,11 @@ elements: |
             Male: Male
             Female: Female
       '#default_value':
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
       '#states':
         invisible:
@@ -1533,8 +1528,8 @@ elements: |
         invisible:
           ':input[name="invisible_trigger"]':
             checked: true
-    invisible_webform_location:
-      '#type': webform_location
+    invisible_webform_location_places:
+      '#type': webform_location_places
       '#title': Location
       '#map': true
       '#geolocation': true
@@ -2089,14 +2084,11 @@ elements: |
             Male: Male
             Female: Female
       '#default_value':
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
-        -
-          name: Loremipsum
+        - name: Loremipsum
           gender: Male
       '#states':
         disabled:
@@ -2318,8 +2310,8 @@ elements: |
         disabled:
           ':input[name="disabled_trigger"]':
             checked: true
-    disabled_webform_location:
-      '#type': webform_location
+    disabled_webform_location_places:
+      '#type': webform_location_places
       '#title': Location
       '#map': true
       '#geolocation': true
@@ -2666,6 +2658,7 @@ elements: |
         disabled:
           ':input[name="disabled_trigger"]':
             checked: true
+  
 css: ''
 javascript: ''
 settings:
@@ -2696,14 +2689,20 @@ settings:
   form_submit_back: false
   form_autofocus: false
   form_details_toggle: false
-  form_login: false
-  form_login_message: ''
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
   submission_label: ''
   submission_log: false
+  submission_views: {  }
+  submission_views_replace: {  }
   submission_user_columns: {  }
   submission_user_duplicate: false
-  submission_login: false
-  submission_login_message: ''
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
   submission_exception_message: ''
   submission_locked_message: ''
   previous_submission_message: ''
@@ -2802,4 +2801,3 @@ access:
     users: {  }
     permissions: {  }
 handlers: {  }
-weight: 0
