@@ -1276,3 +1276,7 @@ ul.dropdown-menu li a:hover{
 div#fh5co-work-section {
   padding: 7em 0 0 0;
 }
+
+.field--name-field-tags .field__item {
+  display: inline-block;
+}
