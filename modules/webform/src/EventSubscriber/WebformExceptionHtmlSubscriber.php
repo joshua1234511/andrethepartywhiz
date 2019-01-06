@@ -12,12 +12,13 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Psr\Log\LoggerInterface;
 use Drupal\webform\Element\WebformHtmlEditor;
 use Drupal\webform\Entity\Webform;
 use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformTokenManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
@@ -69,7 +70,7 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
   /**
    * Constructs a new WebformSubscriber.
    *
-  * @param \Symfony\Component\HttpKernel\HttpKernelInterface $http_kernel
+   * @param \Symfony\Component\HttpKernel\HttpKernelInterface $http_kernel
    *   The HTTP kernel.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service.
@@ -102,9 +103,9 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
    * {@inheritdoc}
    */
   protected static function getPriority() {
-    // Execute before CustomPageExceptionHtmlSubscriber which is -128.
-    // @see \Drupal\Core\EventSubscriber\CustomPageExceptionHtmlSubscriber
-    return -127;
+    // Execute before CustomPageExceptionHtmlSubscriber which is -50.
+    // @see \Drupal\Core\EventSubscriber\CustomPageExceptionHtmlSubscriber::getPriority
+    return -49;
   }
 
   /**
@@ -221,14 +222,19 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
           break;
 
         case WebformInterface::ACCESS_DENIED_PAGE:
-          $this->redirectToLogin($event, $webform_access_denied_message, $webform);
           // Must manually build access denied path so that base path is not
           // included.
           $this->makeSubrequest($event, '/webform/' . $webform->id() . '/access-denied', Response::HTTP_FORBIDDEN);
           break;
 
-        case WebformInterface::ACCESS_DENIED_DEFAULT:
         case WebformInterface::ACCESS_DENIED_MESSAGE:
+          // Display message.
+          $this->setMessage($webform_access_denied_message, $webform);
+          // Make the default 403 request so that we can add cacheable dependencies.
+          $this->makeSubrequest($event, '/system/403', Response::HTTP_FORBIDDEN);
+          break;
+
+        case WebformInterface::ACCESS_DENIED_DEFAULT:
         default:
           // Make the default 403 request so that we can add cacheable dependencies.
           $this->makeSubrequest($event, '/system/403', Response::HTTP_FORBIDDEN);
@@ -252,6 +258,18 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function onException(GetResponseForExceptionEvent $event) {
+    // Only handle 403 exception.
+    // @see \Drupal\webform\EventSubscriber\WebformExceptionHtmlSubscriber::on403
+    $exception = $event->getException();
+    if ($exception instanceof HttpExceptionInterface && $exception->getStatusCode() === 403) {
+      parent::onException($event);
+    }
+  }
+
+  /**
    * Redirect to user login with destination and display custom message.
    *
    * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
@@ -264,9 +282,7 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
   protected function redirectToLogin(GetResponseForExceptionEvent $event, $message = NULL, EntityInterface $entity = NULL) {
     // Display message.
     if ($message) {
-      $message = $this->tokenManager->replace($message, $entity);
-      $build = WebformHtmlEditor::checkMarkup($message);
-      $this->messenger->addStatus($this->renderer->renderPlain($build));
+      $this->setMessage($message, $entity);
     }
 
     // Only redirect anonymous users.
@@ -280,6 +296,20 @@ class WebformExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
       ['absolute' => TRUE, 'query' => $this->redirectDestination->getAsArray()]
     );
     $event->setResponse(new RedirectResponse($redirect_url->toString()));
+  }
+
+  /**
+   * Display custom message.
+   *
+   * @param null|string $message
+   *   (Optional) Message to be display on user login.
+   * @param null|\Drupal\Core\Entity\EntityInterface $entity
+   *   (Optional) Entity to be used when replacing tokens.
+   */
+  protected function setMessage($message, EntityInterface $entity = NULL) {
+    $message = $this->tokenManager->replace($message, $entity);
+    $build = WebformHtmlEditor::checkMarkup($message);
+    $this->messenger->addStatus($this->renderer->renderPlain($build));
   }
 
 }

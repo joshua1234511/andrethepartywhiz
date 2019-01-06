@@ -11,6 +11,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
@@ -46,6 +47,7 @@ use Drupal\webform\WebformSubmissionInterface;
  *   },
  *   bundle_entity_type = "webform",
  *   list_cache_contexts = { "user" },
+ *   list_cache_tags = { "config:webform_list", "webform_submission_list" },
  *   base_table = "webform_submission",
  *   admin_permission = "administer webform",
  *   entity_keys = {
@@ -558,6 +560,18 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
   /**
    * {@inheritdoc}
    */
+  public function isOwner(AccountInterface $account) {
+    if ($account->isAnonymous()) {
+      return !empty($_SESSION['webform_submissions']) && isset($_SESSION['webform_submissions'][$this->id()]);
+    }
+    else {
+      return $account->id() === $this->getOwnerId();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function hasNotes() {
     return $this->notes ? TRUE : FALSE;
   }
@@ -694,7 +708,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
       'langcode' => \Drupal::languageManager()->getCurrentLanguage()->getId(),
       'token' => Crypt::randomBytesBase64(),
       'uri' => preg_replace('#^' . base_path() . '#', '/', $current_request->getRequestUri()),
-      'remote_addr' => ($webform && $webform->isConfidential()) ? '' : $current_request->getClientIp(),
+      'remote_addr' => ($webform && $webform->hasRemoteAddr()) ? '' : $current_request->getClientIp(),
     ];
 
     $webform->invokeHandlers(__FUNCTION__, $values);
@@ -736,7 +750,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
    */
   public function save() {
     // Clear the remote_addr for confidential submissions.
-    if ($this->getWebform()->isConfidential()) {
+    if (!$this->getWebform()->hasRemoteAddr()) {
       $this->get('remote_addr')->value = '';
     }
 

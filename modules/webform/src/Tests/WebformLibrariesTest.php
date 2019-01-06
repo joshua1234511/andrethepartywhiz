@@ -24,16 +24,6 @@ class WebformLibrariesTest extends WebformTestBase {
   protected static $testWebforms = ['test_libraries_optional'];
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-
-    // Create users.
-    $this->createUsers();
-  }
-
-  /**
    * Tests webform libraries.
    */
   public function testLibraries() {
@@ -107,23 +97,22 @@ class WebformLibrariesTest extends WebformTestBase {
 
     // Check that status report excludes optional libraries.
     $this->drupalGet('admin/reports/status');
-    $this->assertText('The CKEditor: Fakeobjects library is excluded.');
-    $this->assertText('The CKEditor: Image library is excluded.');
-    $this->assertText('The CKEditor: Link library is excluded.');
-    $this->assertText('The Code Mirror library is excluded.');
-    $this->assertText('The jQuery: iCheck library is excluded.');
-    $this->assertText('The jQuery: Input Mask library is excluded.');
-    $this->assertText('The jQuery: Select2 library is excluded.');
-    $this->assertText('The jQuery: Chosen library is excluded.');
-    $this->assertText('The jQuery: Timepicker library is excluded.');
-    $this->assertText('The jQuery: Text Counter library is excluded.');
+    $this->assertNoText('CKEditor: Fakeobjects library ');
+    $this->assertNoText('CKEditor: Image library ');
+    $this->assertNoText('CKEditor: Link library ');
+    $this->assertNoText('Code Mirror library ');
+    $this->assertNoText('jQuery: iCheck library ');
+    $this->assertNoText('jQuery: Input Mask library ');
+    $this->assertNoText('jQuery: Select2 library ');
+    $this->assertNoText('jQuery: Chosen library ');
+    $this->assertNoText('jQuery: Timepicker library ');
+    $this->assertNoText('jQuery: Text Counter library ');
 
     // Issue #2934542: Fix broken Webform.Drupal\webform\Tests\WebformLibrariesTest
     // @see https://www.drupal.org/project/webform/issues/2934542
     /*
     // Exclude element types that require libraries.
     $edit = [
-      'excluded_elements[webform_image_select]' => FALSE,
       'excluded_elements[webform_location_geocomplete]' => FALSE,
       'excluded_elements[webform_rating]' => FALSE,
       'excluded_elements[webform_signature]' => FALSE,
@@ -134,12 +123,33 @@ class WebformLibrariesTest extends WebformTestBase {
 
     // Check that status report excludes libraries required by element types.
     $this->drupalGet('admin/reports/status');
-    $this->assertText('The jQuery: Geocoding and Places Autocomplete Plugin library is excluded because required element types (webform_location_geocomplete) are excluded.');
-    $this->assertText('The jQuery: Image Picker library is excluded because required element types (webform_image_select) are excluded.');
-    $this->assertText('The jQuery: RateIt library is excluded because required element types (webform_rating) are excluded.');
-    $this->assertText('The jQuery: Toggles library is excluded because required element types (webform_toggle; webform_toggles) are excluded.');
-    $this->assertText('The Signature Pad library is excluded because required element types (webform_signature) are excluded.');
+    $this->assertNoText('jQuery: Geocoding and Places Autocomplete Plugin library');
+    $this->assertNoText('jQuery: Image Picker library');
+    $this->assertNoText('jQuery: RateIt library');
+    $this->assertNoText('jQuery: Toggles library');
+    $this->assertNoText('Signature Pad library');
     */
+
+    // Check that chosen and select2 using webform's CDN URLs.
+    $edit = [
+      'excluded_libraries[jquery.select2]' => TRUE,
+      'excluded_libraries[jquery.chosen]' => TRUE,
+    ];
+    $this->drupalPostForm('admin/structure/webform/config/libraries', $edit, t('Save configuration'));
+    $this->drupalGet('webform/test_libraries_optional');
+    $this->assertRaw('https://cdnjs.cloudflare.com/ajax/libs/chosen');
+    $this->assertRaw('https://cdnjs.cloudflare.com/ajax/libs/select2');
+
+    // Install chosen and select2 modules.
+    \Drupal::service('module_installer')->install(['chosen', 'chosen_lib', 'select2']);
+    drupal_flush_all_caches();
+
+    // Check that chosen and select2 using module's path and not CDN.
+    $this->drupalGet('webform/test_libraries_optional');
+    $this->assertNoRaw('https://cdnjs.cloudflare.com/ajax/libs/chosen');
+    $this->assertNoRaw('https://cdnjs.cloudflare.com/ajax/libs/select2');
+    $this->assertRaw('/modules/contrib/chosen/css/chosen-drupal.css');
+    $this->assertRaw('/libraries/select2/dist/css/select2.min.css');
   }
 
 }

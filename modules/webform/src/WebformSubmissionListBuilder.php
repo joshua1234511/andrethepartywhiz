@@ -318,7 +318,7 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
     // Set account and state based on the current route.
     switch ($route_name) {
       case 'entity.webform_submission.user':
-        $this->account = $this->currentUser;
+        $this->account = $this->routeMatch->getParameter('user');
         break;
 
       case "$base_route_name.webform.user.submissions":
@@ -477,9 +477,12 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
     $view = Views::getView($name);
     $view->webform_submission_view = TRUE;
 
-    // Get the current displays arguments.
+    // Get the current display or default arguments.
     $displays = $view->storage->get('display');
-    if (isset($displays[$display_id]['display_options']['arguments'])) {
+    if (!empty($displays[$display_id]['display_options']['arguments'])) {
+      $display_arguments = $displays[$display_id]['display_options']['arguments'];
+    }
+    elseif (!empty($displays['default']['display_options']['arguments'])) {
       $display_arguments = $displays['default']['display_options']['arguments'];
     }
     else {
@@ -877,7 +880,7 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
             '#type' => 'link',
             '#title' => new FormattableMarkup('<span class="webform-icon webform-icon-notes webform-icon-notes--@state"></span><span class="visually-hidden">@label</span>', ['@state' => $state, '@label' => $label]),
             '#url' => $notes_url,
-            '#attributes' => WebformDialogHelper::getOffCanvasDialogAttributes(WebformDialogHelper::DIALOG_NARROW),
+            '#attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NARROW),
           ],
           'class' => ['webform-results-table__icon'],
         ];
@@ -1033,6 +1036,7 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
           'title' => $this->t('Delete'),
           'weight' => 100,
           'url' => $this->requestHandler->getUrl($entity, $this->sourceEntity, 'webform.user.submission.delete'),
+          'attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NARROW),
         ];
       }
     }
@@ -1081,10 +1085,14 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
           'title' => $this->t('Delete'),
           'weight' => 100,
           'url' => $this->requestHandler->getUrl($entity, $this->sourceEntity, 'webform_submission.delete_form'),
+          'attributes' => WebformDialogHelper::getModalDialogAttributes(WebformDialogHelper::DIALOG_NARROW),
         ];
       }
 
-      if ($entity->access('view_any') && $this->currentUser->hasPermission('access webform submission log')) {
+      if ($entity->access('view_any')
+        && $this->currentUser->hasPermission('access webform submission log')
+        && $webform->hasSubmissionLog()
+        && $this->moduleHandler->moduleExists('webform_submission_log')) {
         $operations['log'] = [
           'title' => $this->t('Log'),
           'weight' => 100,
@@ -1265,14 +1273,15 @@ class WebformSubmissionListBuilder extends EntityListBuilder {
     $direction = tablesort_get_sort($header);
 
     // If query is order(ed) by 'element__*' we need to build a custom table
-    // sort using hook_query_alter().
-    // @see: webform_query_alter()
+    // sort using hook_query_TAG_alter().
+    // @see webform_query_webform_submission_list_builder_alter()
     if ($order && strpos($order['sql'], 'element__') === 0) {
       $name = $order['sql'];
       $column = $this->columns[$name];
-      $query->addMetaData('webform_submission_element_name', $column['key']);
-      $query->addMetaData('webform_submission_element_property_name', $column['property_name']);
-      $query->addMetaData('webform_submission_element_direction', $direction);
+      $query->addTag('webform_submission_list_builder')
+        ->addMetaData('webform_submission_element_name', $column['key'])
+        ->addMetaData('webform_submission_element_property_name', $column['property_name'])
+        ->addMetaData('webform_submission_element_direction', $direction);
       $result = $query->execute();
       // Must manually initialize the pager because the DISTINCT clause in the
       // query is breaking the row counting.

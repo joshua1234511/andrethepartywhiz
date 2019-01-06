@@ -4,7 +4,6 @@ namespace Drupal\webform;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityWithPluginCollectionInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\webform\Plugin\WebformHandlerInterface;
 
@@ -12,6 +11,26 @@ use Drupal\webform\Plugin\WebformHandlerInterface;
  * Provides an interface defining a webform entity.
  */
 interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollectionInterface, EntityOwnerInterface {
+
+  /**
+   * Webform title.
+   */
+  const TITLE_WEBFORM = 'webform';
+
+  /**
+   * Source entity title.
+   */
+  const TITLE_SOURCE_ENTITY = 'source_entity';
+
+  /**
+   * Both source entity and webform title.
+   */
+  const TITLE_SOURCE_ENTITY_WEBFORM = 'source_entity_webform';
+
+  /**
+   * Both webform and source entity title.
+   */
+  const TITLE_WEBFORM_SOURCE_ENTITY = 'webform_source_entity';
 
   /**
    * Denote drafts are not allowed.
@@ -221,6 +240,34 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
   public function getNumberOfWizardPages();
 
   /**
+   * Returns the webform's current operation.
+   *
+   * @return string
+   *   The webform's operation.
+   */
+  public function getOperation();
+
+  /**
+   * Sets the webform's current operation .
+   *
+   * @param string $operation
+   *   The webform's operation.
+   *
+   * @return $this
+   *
+   * @see \Drupal\webform\WebformSubmissionForm
+   */
+  public function setOperation($operation);
+
+  /**
+   * Determine if the webform is being tested.
+   *
+   * @return bool
+   *   TRUE if the webform is being tested.
+   */
+  public function isTest();
+
+  /**
    * Sets the webform settings and properties override state.
    *
    * Setting the override state to TRUE allows modules to alter a webform's
@@ -310,9 +357,18 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
    * Returns the webform confidential indicator.
    *
    * @return bool
-   *   TRUE if the webform is confidential .
+   *   TRUE if the webform is confidential.
    */
   public function isConfidential();
+
+
+  /**
+   * Determine if remote IP address is being stored.
+   *
+   * @return bool
+   *   TRUE if remote IP address is being stored.
+   */
+  public function hasRemoteAddr();
 
   /**
    * Determine if the saving of submissions is disabled.
@@ -527,30 +583,6 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
   public static function getDefaultSettings();
 
   /**
-   * Returns the webform default access rules.
-   *
-   * @return array
-   *   A structured array containing all the webform default access rules.
-   */
-  public static function getDefaultAccessRules();
-
-  /**
-   * Checks webform access to an operation on a webform's submission.
-   *
-   * @param string $operation
-   *   The operation access should be checked for.
-   *   Usually "create", "view", "update", "delete", "purge", or "admin".
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The user session for which to check access.
-   * @param \Drupal\webform\WebformSubmissionInterface|null $webform_submission
-   *   (optional) A webform submission.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function checkAccessRules($operation, AccountInterface $account, WebformSubmissionInterface $webform_submission = NULL);
-
-  /**
    * Get webform submission webform.
    *
    * @param array $values
@@ -664,12 +696,28 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
   public function getElementsInitializedFlattenedAndHasValue($operation = NULL);
 
   /**
-   * Get webform elements selectors as options.
+   * Get webform manager file elements.
+   *
+   * @return array
+   *   Webform managed file elements.
+   */
+  public function getElementsManagedFiles();
+
+  /**
+   * Get webform element's selectors as options.
    *
    * @return array
    *   Webform elements selectors as options.
    */
   public function getElementsSelectorOptions();
+
+  /**
+   * Get webform element options as autocomplete source values.
+   *
+   * @return array
+   *   Webform element options as autocomplete source values.
+   */
+  public function getElementsSelectorSourceValues();
 
   /**
    * Get webform elements that can be prepopulated.
